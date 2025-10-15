@@ -2,7 +2,10 @@
 
 ## Description
 
-The purpose of the 
+The purpose of this project is to generate a discussion about difference of 
+educational outcomes from different parts of the world comparing different metrics
+about educational outcomes and relating those with other characteristics of society
+such as poverty, family structure, employment, and others.
 
 ## Data Sources
 
