@@ -20,3 +20,5 @@ def translate_english_degrees(row):
         return "Undergrads"
     else:
         return "Diplomas"
+    
+
