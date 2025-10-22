@@ -1,4 +1,4 @@
-# {Universities Chile}
+# Universities Chile
 
 Agustín Eyzaguirre
 
