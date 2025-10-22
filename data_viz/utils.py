@@ -21,4 +21,33 @@ def translate_english_degrees(row):
     else:
         return "Diplomas"
     
+def translate_area_del_conocimiento(row):
+    area = row["área del conocimiento"]
+    
+    translation_dict = {
+        "Salud": "Health",
+        "Tecnología": "Technology",
+        "Ciencias Básicas": "Basic Sciences",
+        "Administración y Comercio": "Business and Commerce",
+        "Agropecuaria": "Agricultural Sciences",
+        "Ciencias Sociales": "Social Sciences",
+        "Arte y Arquitectura": "Arts and Architecture",
+        "Educación": "Education",
+        "Derecho": "Law",
+        "Humanidades": "Humanities"
+    }
+    return translation_dict[area]
 
+
+def translates_degree(row):
+    value = row["carrera clasificación nivel 2"]
+    if value == 'Carreras Profesionales':
+        return "Professionals (Undergrad)"
+    elif value == 'Carreras Técnicas':
+        return "Technical (Undergrad)"
+    elif value == "Doctorado":
+        return "PhD (Grad)"
+    elif value == "Postítulo":
+        return "Diplomas (Grad)"
+    else:
+        return "Masters (Grad)"
