@@ -1,4 +1,4 @@
-# {Project Name}
+# {Universities Chile}
 
 Agustín Eyzaguirre
 
