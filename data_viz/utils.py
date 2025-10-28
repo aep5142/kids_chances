@@ -19,7 +19,7 @@ def translate_english_degrees(row):
     elif row["nivel global"] == "Pregrado":
         return "Undergrads"
     else:
-        return "Diplomas"
+        return "Non-Degree"
     
 def translate_area_del_conocimiento(row):
     area = row["área del conocimiento"]
@@ -48,6 +48,6 @@ def translates_degree(row):
     elif value == "Doctorado":
         return "PhD (Grad)"
     elif value == "Postítulo":
-        return "Diplomas (Grad)"
+        return "Non-Degree (Grad)"
     else:
         return "Masters (Grad)"
