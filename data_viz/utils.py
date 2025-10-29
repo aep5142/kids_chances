@@ -1,6 +1,7 @@
 import pandas as pd
 from pathlib import Path
 import duckdb
+import os
 
 # Global Variables
 sa_countries = ["Argentina", "Chile", "Peru", "Colombia", "Bolivia",
@@ -72,21 +73,25 @@ def loads_cae(cae_path: Path) -> pd.DataFrame:
     engine='pyarrow')
     return cae
 
-def loads_and_clean_cae_db(cae_path: Path, db_path: Path = Path("cae.duckdb")) -> duckdb.DuckDBPyConnection:
+def loads_cae_db(cae_path: Path, db_path: Path = Path("../data/raw/cae.duckdb")) -> duckdb.DuckDBPyConnection:
     # Load and clean data in streaming mode (pandas only used temporarily)
-    cae_df = loads_cae(cae_path)
-    cae_df.columns = cae_df.columns.str.strip()
-    beneficiarios = ["BENEFICIARIO RENOVANTE                       ", "NUEVO BENEFICIARIO                           "]
-    cae_df = cae_df[cae_df["TIPO_BENEFICIARIO"].isin(beneficiarios)]
-    cae_df["AÑO_OPERACION"] = (cae_df["AÑO_OPERACION"].astype(float) * 1000).astype(int)
+    if db_path.exists():
+        conn = duckdb.connect(str(db_path))
+        return conn
+    else:
+        cae_df = loads_cae(cae_path)
+        cae_df.columns = cae_df.columns.str.strip()
+        beneficiarios = ["BENEFICIARIO RENOVANTE                       ", "NUEVO BENEFICIARIO                           "]
+        cae_df = cae_df[cae_df["TIPO_BENEFICIARIO"].isin(beneficiarios)]
+        cae_df["AÑO_OPERACION"] = (cae_df["AÑO_OPERACION"].astype(float) * 1000).astype(int)
 
-    # Create DuckDB database and persist table
-    conn = duckdb.connect(str(db_path))
-    conn.register("cae_df", cae_df)
-    conn.execute("CREATE OR REPLACE TABLE cae AS SELECT * FROM cae_df")
+        # Create DuckDB database and persist table
+        conn = duckdb.connect(str(db_path))
+        conn.register("cae_df", cae_df)
+        conn.execute("CREATE OR REPLACE TABLE cae AS SELECT * FROM cae_df")
 
-    print(f"✅ DuckDB database saved at {db_path}")
-    return conn
+        print(f"✅ DuckDB database saved at {db_path}")
+        return conn
 
 
 
