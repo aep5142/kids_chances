@@ -69,8 +69,16 @@ def loads_enrolled_graduated(path_csv: Path) -> pd.DataFrame:
 
 def loads_cae(cae_path: Path) -> pd.DataFrame:
     cae = pd.read_csv(cae_path,
-    sep=";",
-    engine='pyarrow')
+                      sep=";",
+                      engine='pyarrow')
+    # Clean trailing and leading whitespaces from column names
+    cae.columns = cae.columns.str.strip()
+
+    # Strip leading/trailing whitespace from all string/object cells
+    str_cols = cae.select_dtypes(include=["object", "string"]).columns
+    if len(str_cols) > 0:
+        # .str methods preserve NaN values
+        cae[str_cols] = cae[str_cols].apply(lambda col: col.str.strip())
     return cae
 
 def loads_cae_db(cae_path: Path, db_path: Path = Path("../data/raw/cae.duckdb")) -> duckdb.DuckDBPyConnection:
@@ -80,10 +88,31 @@ def loads_cae_db(cae_path: Path, db_path: Path = Path("../data/raw/cae.duckdb"))
         return conn
     else:
         cae_df = loads_cae(cae_path)
-        cae_df.columns = cae_df.columns.str.strip()
-        beneficiarios = ["BENEFICIARIO RENOVANTE                       ", "NUEVO BENEFICIARIO                           "]
+        beneficiarios = ["BENEFICIARIO RENOVANTE", "NUEVO BENEFICIARIO"]
         cae_df = cae_df[cae_df["TIPO_BENEFICIARIO"].isin(beneficiarios)]
-        cae_df["AÑO_OPERACION"] = (cae_df["AÑO_OPERACION"].astype(float) * 1000).astype(int)
+        
+        columns = [col.lower() for col in cae_df.columns]
+        cae_df.columns = columns
+
+        # Safe conversion from floats like 2.014 -> 2014
+        # - coerce non-numeric to NaN
+        # - multiply by 1000
+        # - round() to avoid float precision truncation (e.g. 2013.9999)
+        # - convert to pandas nullable integer type (Int64) to preserve NaNs if any
+        cae_df["año_operacion"] = (
+            pd.to_numeric(cae_df["año_operacion"], errors="coerce")
+            .mul(1000)
+            .round()
+            .astype("Int64")
+        )
+        cae_df["año_licitacion"] = (
+            pd.to_numeric(cae_df["año_licitacion"], errors="coerce")
+            .mul(1000)
+            .round()
+            .astype("Int64")
+        )
+        
+
 
         # Create DuckDB database and persist table
         conn = duckdb.connect(str(db_path))
